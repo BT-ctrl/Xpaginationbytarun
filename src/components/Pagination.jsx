@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 
 const Pagination = () => {
@@ -7,6 +5,7 @@ const Pagination = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(10); // Rows per page
   const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(true); // Loading state
 
   // Fetch data on component mount
   useEffect(() => {
@@ -19,15 +18,17 @@ const Pagination = () => {
       })
       .then(data => {
         setData(data);
-        setTotalPages(Math.ceil(data.length / rowsPerPage)); // Calculate total pages
+        setTotalPages(Math.ceil(data.length / rowsPerPage));
+        setLoading(false); // Data loaded
       })
       .catch(error => {
         alert('Failed to fetch data');
         console.error(error);
+        setLoading(false); // Stop loading even on error
       });
   }, []);
 
-  // Handle page change (next or previous)
+  // Handle page change
   const goToNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(prevPage => prevPage + 1);
@@ -44,6 +45,11 @@ const Pagination = () => {
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = data.slice(indexOfFirstRow, indexOfLastRow);
+
+  // Show loading text while data is being fetched
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
@@ -71,14 +77,18 @@ const Pagination = () => {
       <div className="pagination-controls">
         <button 
           onClick={goToPreviousPage} 
-          disabled={currentPage === 1} 
+          disabled={currentPage === 1}
+          aria-label="Previous Page"
         >
           Previous
         </button>
-        <span>Page {currentPage} of {totalPages}</span>
+        <span data-testid="page-indicator">
+          Page {currentPage} of {totalPages}
+        </span>
         <button 
           onClick={goToNextPage} 
           disabled={currentPage === totalPages}
+          aria-label="Next Page"
         >
           Next
         </button>
